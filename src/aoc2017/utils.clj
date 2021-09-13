@@ -8,7 +8,15 @@
   (map #(Integer/parseInt (str %)) string))
 
 (defn integers [string]
-  (map #(Integer/parseInt %) (re-seq #"\d+" string)))
+  (let [ns (map #(Long/parseLong %) (re-seq #"-?\d+" string))]
+    (if (= 1 (count ns))
+      (first ns)
+      ns)))
+
+(defn words [string]
+  (str/split string #" "))
 
 (comment
-  (load-input 1 digitize))
+  (load-input 1 digitize)
+  (load-input 4 words)
+  (load-input 5 integers))
