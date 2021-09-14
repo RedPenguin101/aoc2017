@@ -16,6 +16,9 @@
 (defn words [string]
   (str/split string #" "))
 
+(defn alpha-words [string]
+  (re-seq #"[A-Za-z]+" string))
+
 (comment
   (load-input 1 digitize)
   (load-input 4 words)
