@@ -1,34 +1,12 @@
 (ns aoc2017.day7
   (:require [aoc2017.utils :refer [load-input alpha-words integers]]))
 
-"Day 7: Recursive Circus
-  What is the name of the bottom program?"
-
-(def input (load-input 7 alpha-words))
-
-(defn edges [input]
-  (mapcat (fn [[prnt & children]]
-            (for [c children]
-              [prnt c]))
-          input))
-
-(def graph (edges input))
+;; Generic graph functions
 
 (defn top-parent [graph node]
   (if-let [p (ffirst (filter #(= node (second %)) graph))]
     (recur graph p)
     node))
-
-(comment
-  (top-parent graph (ffirst graph))
-  ;; => "svugo"
-  )
-
-"Part2: "
-
-(def weights
-  (apply hash-map (interleave (map first (load-input 7 alpha-words))
-                              (load-input 7 integers))))
 
 (defn children [graph node]
   (map second (filter #(= node (first %)) graph)))
@@ -37,19 +15,44 @@
   (cons node (mapcat #(descendants graph %)
                      (children graph node))))
 
+"Day 7: Recursive Circus
+  Part 1: What is the name of the bottom program?"
+
+(defn edges [input]
+  (mapcat (fn [[prnt & children]]
+            (for [c children]
+              [prnt c]))
+          input))
+
+(def graph (edges (load-input 7 alpha-words)))
+
+(comment
+  (top-parent graph (ffirst graph))
+  ;; => "svugo"
+  )
+
+"Part2: What is the corrected weight of the unbalanced program?"
+
+(def weights
+  (apply hash-map (interleave (map first (load-input 7 alpha-words))
+                              (load-input 7 integers))))
+
 (defn total-weight [node graph weights]
-  (apply + (map weights (descendants graph node))))
+  (->> node
+       (descendants graph)
+       (map weights)
+       (apply +)))
 
 (defn unbalanced? [node graph weights]
-  (let [w (sort-by (comp count second) (group-by #(total-weight % graph weights) (children graph node)))]
-    (if (= (count w) 1)
+  (let [weights-by-freq (sort-by (comp count second) (group-by #(total-weight % graph weights) (children graph node)))]
+    (if (= (count weights-by-freq) 1)
       nil
-      [(first (second (first w)))
-       (apply - (map first w))])))
+      [(first (second (first weights-by-freq)))
+       (apply - (map first weights-by-freq))])))
 
-(defn rebalance-program [node edges weights diff]
-  (if-let [[nd amt] (unbalanced? node edges weights)]
-    (recur nd edges weights amt)
+(defn rebalance-program [node graph weights diff]
+  (if-let [[ub-node ub-amount] (unbalanced? node graph weights)]
+    (recur ub-node graph weights ub-amount)
     (- (weights node) diff)))
 
 (comment
