@@ -26,7 +26,7 @@
     (update registers r1 (fnil id 0) v1)
     registers))
 
-(->> (load-input 8 identity)
+(->> (load-input 8)
      (map parse-instruction)
      (reduce process-instruction {})
      vals
@@ -40,7 +40,7 @@
       (update new-reg :max max (new-reg r1)))
     registers))
 
-(->> (load-input 8 identity)
+(->> (load-input 8)
      (map parse-instruction)
      (reduce process-instruction-track-max {:max 0})
      :max)
